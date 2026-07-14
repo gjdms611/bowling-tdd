@@ -45,33 +45,40 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 테스트로부터 새롭게(fresh) 구현하라. 그게 전부다.
 
-## Red-Green-Refactor
+## Red-Green-Review (Human-in-the-Loop)
+
+에이전트 혼자 코드를 밀어붙이는 순수 TDD 루프는, 사람 파트너가 잘못된 방향을 뒤늦게 발견하면 되돌리는 비용이 크다. 그래서 이 루프는 사이클마다 두 지점에서 사람이 개입하고 커밋으로 이력을 남긴다: **목표/계획이 확정되는 시점**과 **구현이 끝나고 검토받는 시점**. 두 시점 모두 사람의 승인 없이는 다음 단계로 넘어가지 않는다.
 
 ```dot
 digraph tdd_cycle {
     rankdir=LR;
-    red [label="RED\n실패하는 테스트 작성", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="제대로\n실패하는지 확인", shape=diamond];
-    green [label="GREEN\n최소한의 코드", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="통과 확인\n전체 그린", shape=diamond];
-    refactor [label="REFACTOR\n정리", shape=box, style=filled, fillcolor="#ccccff"];
+    plan [label="RED\n목표 설정 + Plan.md\n+ 실패하는 테스트", shape=box, style=filled, fillcolor="#ffcccc"];
+    human_red [label="인간 검토\n(계획)", shape=diamond];
+    commit_red [label="커밋\n(계획+RED)", shape=box];
+    green [label="GREEN\n최소한의 코드\n+ 통과 확인", shape=box, style=filled, fillcolor="#ccffcc"];
+    review [label="REVIEW\n계획 대비 코드 검토\n+ 리팩토링", shape=box, style=filled, fillcolor="#ccccff"];
+    human_review [label="인간 검토\n(코드)", shape=diamond];
+    commit_review [label="커밋\n(구현)", shape=box];
     next [label="다음", shape=ellipse];
 
-    red -> verify_red;
-    verify_red -> green [label="예"];
-    verify_red -> red [label="잘못된\n실패"];
-    green -> verify_green;
-    verify_green -> refactor [label="예"];
-    verify_green -> green [label="아니오"];
-    refactor -> verify_green [label="그린 유지"];
-    verify_green -> next;
-    next -> red;
+    plan -> human_red;
+    human_red -> commit_red [label="승인"];
+    human_red -> plan [label="반려"];
+    commit_red -> green;
+    green -> review;
+    review -> human_review;
+    human_review -> commit_review [label="승인"];
+    human_review -> review [label="반려/리팩토링 요청"];
+    commit_review -> next;
+    next -> plan;
 }
 ```
 
-### RED - 실패하는 테스트 작성
+### 1. RED - 목표 설정 + Plan.md + 실패하는 테스트 + 인간 검토 + 커밋
 
-무엇이 일어나야 하는지를 보여주는 최소한의 테스트 한 개를 작성하라.
+무엇이 일어나야 하는지를 정확히 설정하라. 모호하면 구현으로 넘어가지 말고 사람 파트너에게 물어라 — 잘못된 목표를 향해 완벽하게 구현해봤자 되돌리는 비용이 더 크다.
+
+**Plan.md 작성**: 이번 사이클에서 구현할 동작과 접근 방식을 문서화하라. 사람이 코드를 보기 전에 "무엇을, 왜, 어떻게"를 승인할 수 있는 체크포인트다. 아래는 여전히 그대로 지킨다 — Plan.md가 그 위에 사람이 개입할 지점을 추가하는 것이지, 대체하는 게 아니다:
 
 <Good>
 ```python
@@ -108,9 +115,7 @@ def test_retry_works(mocker):
 - 명확한 이름
 - 실제 코드 (불가피한 경우가 아니면 mock 사용 금지)
 
-### RED 검증 - 실패하는 것을 직접 보기
-
-**필수. 절대 건너뛰지 말 것.**
+**실패하는 것을 직접 보기 — 필수. 절대 건너뛰지 말 것.**
 
 ```bash
 pytest path/to/test_file.py
@@ -125,9 +130,11 @@ pytest path/to/test_file.py
 
 **테스트가 에러를 낸다고?** 에러를 고치고, 제대로 실패할 때까지 다시 실행하라.
 
-### GREEN - 최소한의 코드
+**인간 검토 + 커밋**: Plan.md와 실패하는 테스트를 사람 파트너에게 제시하고 검토를 요청하라. 승인 전에는 구현(GREEN)으로 넘어가지 말라. 승인받으면 Plan.md + 테스트를 커밋하라 — 이 커밋이 "우리가 무엇을 만들기로 합의했는가"의 기록이 된다.
 
-테스트를 통과시키는 가장 단순한 코드를 작성하라.
+### 2. GREEN - 최소한의 코드
+
+RED에서 승인된 목표를 달성하는 가장 단순한 코드를 작성하라.
 
 <Good>
 ```python
@@ -157,11 +164,9 @@ def retry_operation(
 과도한 설계
 </Bad>
 
-기능을 추가하지 말고, 다른 코드를 리팩터링하지 말고, 테스트가 요구하는 것 이상으로 "개선"하지 말라.
+기능을 추가하지 말고, 다른 코드를 리팩터링하지 말고, Plan.md와 테스트가 요구하는 것 이상으로 "개선"하지 말라.
 
-### GREEN 검증 - 통과하는 것을 직접 보기
-
-**필수.**
+**통과하는 것을 직접 보기 — 필수.**
 
 ```bash
 pytest path/to/test_file.py
@@ -176,18 +181,22 @@ pytest path/to/test_file.py
 
 **다른 테스트가 실패한다?** 지금 당장 고쳐라.
 
-### REFACTOR - 정리
+이 단계에서는 아직 커밋하지 않는다 — REVIEW까지 기다려라. 사람 파트너가 Plan과 최종 결과물을 한 번에 같이 볼 수 있어야 계획 이탈 여부를 판단하기 쉽다.
 
-그린 상태가 된 후에만:
-- 중복 제거
-- 이름 개선
-- 헬퍼(helper) 추출
+### 3. REVIEW - 계획 대비 코드 검토 + 인간 검토 + 커밋
 
-테스트는 그린으로 유지하라. 동작을 추가하지 말라.
+GREEN에서 작성된 코드를 Plan.md와 대조해 검토하라:
+- Plan에 없는 것이 구현되지는 않았는가? (스코프 밖 추가 여부)
+- Plan의 목표가 실제로 달성됐는가?
+- 리팩토링이 필요한가?
+
+리팩토링이 필요하면(중복 제거, 이름 개선, 헬퍼 추출) 수행하고, 테스트가 여전히 그린인지 재확인하라. 리팩토링 중 동작을 추가하지 말라.
+
+**인간 검토 + 커밋**: 최종 코드(와 리팩토링 결과)를 사람 파트너에게 제시하고 검토를 요청하라. 승인되면 구현을 커밋하라. 반려되면 지적된 부분을 GREEN/REVIEW로 돌아가 고치고 다시 검토받아라.
 
 ### 반복
 
-다음 기능에 대한 다음 실패하는 테스트를 작성하라.
+다음 목표에 대해 RED부터 다시 시작하라.
 
 ## 좋은 테스트
 
@@ -278,14 +287,23 @@ TDD가 바로 실용적이다:
 - "이미 X시간 썼는데, 지우는 건 낭비"
 - "TDD는 교조적, 나는 실용적"
 - "이건 다른 경우인데..."
+- "Plan.md는 생략하고 바로 구현할게요, 어차피 간단해요"
+- "일단 구현부터 하고 나중에 한꺼번에 검토받을게요"
 
-**이 모든 것은 다음을 의미한다: 코드를 삭제하라. TDD로 다시 시작하라.**
+**이 모든 것은 다음을 의미한다: 코드를 삭제하라. TDD로 다시 시작하라. (뒤의 두 개는: 커밋하지 말고 계획/구현을 사람 파트너에게 먼저 보여라.)**
 
 ## 예시: 버그 수정
 
 **버그:** 빈 이메일이 허용됨
 
-**RED**
+**RED — Plan.md**
+```
+목표: submit_form이 빈 이메일/공백만 있는 이메일을 거부하고
+      {"error": "Email required"}를 반환하게 한다.
+접근: data.get("email", "")로 값을 꺼내 .strip()이 falsy면 에러 반환.
+```
+
+**RED — 실패하는 테스트**
 ```python
 def test_rejects_empty_email():
     result = submit_form({"email": ""})
@@ -297,6 +315,8 @@ def test_rejects_empty_email():
 $ pytest
 FAILED: KeyError: 'error'   (또는 'Email required'를 기대했으나 다른 값)
 ```
+
+**RED — 인간 검토 + 커밋**: Plan.md와 실패하는 테스트를 보여주고 승인받은 뒤 커밋한다.
 
 **GREEN**
 ```python
@@ -313,13 +333,14 @@ $ pytest
 PASSED
 ```
 
-**REFACTOR**
-여러 필드에 대한 검증이 필요해지면 검증 로직을 추출하라.
+**REVIEW**
+Plan.md와 대조: 이메일 외 다른 필드 검증이 추가되지 않았는지 확인. 지금은 검증 규칙이 하나뿐이라 리팩토링(로직 추출) 불필요 — 여러 필드에 대한 검증이 필요해지면 그때 추출한다. 사람 파트너에게 최종 코드를 보여주고 승인받은 뒤 커밋한다.
 
 ## 검증 체크리스트
 
 작업을 완료(complete)로 표시하기 전에:
 
+- [ ] Plan.md가 존재하고 사람 파트너의 승인을 받았다
 - [ ] 모든 새 함수/메서드에 테스트가 있다
 - [ ] 각 테스트가 실패하는 것을 직접 보고 구현했다
 - [ ] 각 테스트가 예상한 이유로 실패했다 (오타가 아니라 기능 부재로)
@@ -328,6 +349,9 @@ PASSED
 - [ ] 출력이 깨끗하다 (에러, 경고 없음)
 - [ ] 테스트가 실제 코드를 사용한다 (mock은 불가피할 때만)
 - [ ] 엣지 케이스와 에러 케이스가 커버되어 있다
+- [ ] 구현이 Plan.md 범위를 벗어나지 않았다 (스코프 밖 추가 없음)
+- [ ] 최종 코드가 사람 파트너의 검토와 승인을 받았다
+- [ ] RED(계획+테스트)와 REVIEW(구현) 각각 별도로 커밋되었다
 
 체크박스를 모두 채울 수 없다면? TDD를 건너뛴 것이다. 처음부터 다시 시작하라.
 
@@ -411,6 +435,7 @@ pytest -s
 
 ```
 프로덕션 코드 → 테스트가 존재하고, 먼저 실패했다
+커밋 → Plan.md/RED 승인, 그리고 별도로 최종 코드 승인, 둘 다 사람 파트너로부터 받았다
 그 외 → TDD가 아니다
 ```
 
