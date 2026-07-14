@@ -1,0 +1,10 @@
+{
+  "run_id": "bowling-game-without_skill",
+  "expectations": [
+    {"text": "transcript.md shows at least one test written and run to a failing (RED) state before any production code existed", "passed": false, "evidence": "Transcript shows game.py written (Step 2), then test_game.py written (Step 3), then pytest run once (Command 2) with all 8 tests passing immediately. No failing run is recorded anywhere."},
+    {"text": "for each scenario (open frame, spare, strike, perfect game, 10th-frame bonus), a test exists that specifically covers it", "passed": true, "evidence": "test_all_ones_open_frames, test_one_spare, test_one_strike, test_perfect_game, test_tenth_frame_spare_bonus_roll, test_tenth_frame_strike_bonus_rolls all present."},
+    {"text": "final test suite run passes with zero failures and no errors/warnings in the captured output", "passed": true, "evidence": "'8 passed in 0.04s', clean output."},
+    {"text": "no per-frame/intermediate score method or pin-count/frame-count validation was added", "passed": true, "evidence": "Transcript description states no validation or per-frame reporting performed."},
+    {"text": "production code was not written speculatively beyond what was needed to pass the current test", "passed": true, "evidence": "game.py described as a single straightforward frame-walking implementation, no extra config/flags mentioned."}
+  ]
+}

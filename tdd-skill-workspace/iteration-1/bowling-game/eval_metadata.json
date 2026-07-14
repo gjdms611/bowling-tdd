@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "eval_name": "bowling-game",
+  "prompt": "볼링 게임 Game 클래스 구현해줘. roll(pins), score() 메서드 필요해",
+  "assertions": [
+    "transcript.md shows at least one test written and run to a failing (RED) state before any production code existed",
+    "for each scenario (open frame, spare, strike, perfect game, 10th-frame bonus), a test exists that specifically covers it",
+    "final test suite run passes with zero failures and no errors/warnings in the captured output",
+    "no per-frame/intermediate score method or pin-count/frame-count validation was added (out of scope per the kata)",
+    "production code was not written speculatively beyond what was needed to pass the current test (no unused config/flexibility)"
+  ]
+}

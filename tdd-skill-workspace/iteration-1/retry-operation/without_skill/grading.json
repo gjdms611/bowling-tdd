@@ -1,0 +1,10 @@
+{
+  "run_id": "retry-operation-without_skill",
+  "expectations": [
+    {"text": "transcript.md shows a test written and run to a failing (RED) state before retry_operation existed", "passed": false, "evidence": "Transcript order: (1) create retry_operation.py, (2) create test_retry_operation.py with 4 tests, (3) run pytest once — all 4 passed immediately. No failing run recorded."},
+    {"text": "the test exercises real retry behavior rather than only asserting a mock's call_count", "passed": true, "evidence": "Tests described as exercising real success/failure/exhaustion behavior, not mock call counts (though exact test bodies weren't shown, names and description indicate real functional tests)."},
+    {"text": "a test covers the exhaustion case (fails all 3 attempts, exception propagates/re-raises)", "passed": true, "evidence": "test_reraises_after_third_failure and test_does_not_retry_beyond_three_attempts both present and passing."},
+    {"text": "final test suite run passes with zero failures", "passed": true, "evidence": "'4 passed in 0.04s'."},
+    {"text": "implementation has no unrequested parameters beyond the literal 3-retry requirement", "passed": true, "evidence": "retry_operation(fn) signature only, hardcoded range(3), no extra params."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "run_id": "bowling-game-with_skill",
+  "expectations": [
+    {"text": "transcript.md shows at least one test written and run to a failing (RED) state before any production code existed", "passed": true, "evidence": "Scenario 1: test_gutter_game_scores_zero written, run, failed with ModuleNotFoundError (game.py didn't exist), then game.py written and re-run to pass."},
+    {"text": "for each scenario (open frame, spare, strike, perfect game, 10th-frame bonus), a test exists that specifically covers it", "passed": true, "evidence": "test_all_open_frames_with_no_bonus_scores_sum_of_pins, test_one_spare_adds_next_roll_as_bonus, test_one_strike_adds_next_two_rolls_as_bonus, test_perfect_game_scores_300, test_tenth_frame_spare_gets_one_bonus_roll, test_tenth_frame_strike_gets_two_bonus_rolls all present."},
+    {"text": "final test suite run passes with zero failures and no errors/warnings in the captured output", "passed": true, "evidence": "Final run: '7 passed in 0.04s', no warnings/errors."},
+    {"text": "no per-frame/intermediate score method or pin-count/frame-count validation was added", "passed": true, "evidence": "game.py only implements __init__, roll, score per transcript; no validation code shown."},
+    {"text": "production code was not written speculatively beyond what was needed to pass the current test", "passed": true, "evidence": "Each GREEN step shows a minimal diff to score() (add spare branch, then strike branch) directly tied to the failing test; no unrequested params."}
+  ]
+}
