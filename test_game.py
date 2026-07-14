@@ -54,3 +54,23 @@ def test_perfect_game():
     for _ in range(12):
         game.roll(10)
     assert game.score() == 300
+
+
+def test_tenth_frame_spare_with_bonus_roll():
+    game = Game()
+    for _ in range(18):
+        game.roll(0)
+    game.roll(9)
+    game.roll(1)
+    game.roll(5)
+    assert game.score() == 15
+
+
+def test_tenth_frame_strike_with_bonus_rolls():
+    game = Game()
+    for _ in range(18):
+        game.roll(0)
+    game.roll(10)
+    game.roll(4)
+    game.roll(5)
+    assert game.score() == 19
