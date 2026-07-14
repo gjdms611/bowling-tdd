@@ -45,3 +45,27 @@ def test_perfect_game_scores_300():
         game.roll(10)
 
     assert game.score() == 300
+
+
+def test_tenth_frame_spare_gets_one_bonus_roll():
+    game = Game()
+    for _ in range(9):
+        game.roll(0)
+        game.roll(0)
+    game.roll(5)
+    game.roll(5)
+    game.roll(3)
+
+    assert game.score() == 13
+
+
+def test_tenth_frame_strike_gets_two_bonus_rolls():
+    game = Game()
+    for _ in range(9):
+        game.roll(0)
+        game.roll(0)
+    game.roll(10)
+    game.roll(4)
+    game.roll(3)
+
+    assert game.score() == 17
