@@ -37,3 +37,11 @@ def test_one_strike_adds_next_two_rolls_as_bonus():
         game.roll(0)
 
     assert game.score() == 24
+
+
+def test_perfect_game_scores_300():
+    game = Game()
+    for _ in range(12):
+        game.roll(10)
+
+    assert game.score() == 300
